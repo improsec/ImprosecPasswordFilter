@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="adler">
+      <UniqueIdentifier>{ff029f9d-ee25-4665-a1eb-9a0b39f6d8f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="blacklist">
+      <UniqueIdentifier>{f57b51b6-ebc5-4469-bcd3-05cb4318ab98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="logger">
+      <UniqueIdentifier>{53da7fc8-45b6-4c1f-9b37-e6263009328c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="logger.hpp">
+      <Filter>logger</Filter>
+    </ClInclude>
+    <ClInclude Include="adler32.hpp">
+      <Filter>adler</Filter>
+    </ClInclude>
+    <ClInclude Include="blacklist.hpp">
+      <Filter>blacklist</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="logger.cpp">
+      <Filter>logger</Filter>
+    </ClCompile>
+    <ClCompile Include="adler32.cpp">
+      <Filter>adler</Filter>
+    </ClCompile>
+    <ClCompile Include="blacklist.cpp">
+      <Filter>blacklist</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+</Project>
