@@ -12,6 +12,7 @@ The password filters available in the above described registry key are only base
 * C:\Windows\System32
 
 The following image presents a high-level illustration of the flow between the LSA process and our custom password filter DLL:
+
 ![picture](Layout.png)
 
 Additionally, our password filter creates a thread, that will perform constant runtime monitoring of the contents of files in the "C:\improsec" directory. Upon detection of file modifications, our password filter will reload the necessary files to make sure all configurations can be modified without rebooting the system.
