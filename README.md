@@ -1,5 +1,5 @@
 # Improsec Password Filter (IPF)
-![License](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT) ![Windows Server 2008 R2 | 2012 R2 | 2016](https://img.shields.io/badge/Windows%20Server-2008%20R2%20|%202012%20R2%20|%202016-007bb8.svg) ![Visual Studio 2017](https://img.shields.io/badge/Visual%20Studio-2017-383278.svg)
+[![License](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT) ![Windows Server 2008 R2 | 2012 R2 | 2016](https://img.shields.io/badge/Windows%20Server-2008%20R2%20|%202012%20R2%20|%202016-007bb8.svg) ![Visual Studio 2017](https://img.shields.io/badge/Visual%20Studio-2017-383278.svg)
 
 Blacklist known weak passwords in your Active Directory environments.
 
