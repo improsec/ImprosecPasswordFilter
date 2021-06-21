@@ -19,7 +19,7 @@
 
 $path = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
 $name = "Notification Packages"
-$filt = "ipfilter"
+$filt = "ipf"
 
 New-Item -Path "C:\" -Name "improsec" -ItemType Directory -Force | Out-Null
 Set-Content -Path "C:\improsec\enabled.txt" -Value "1" -Force | Out-Null
