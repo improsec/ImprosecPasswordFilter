@@ -1,9 +1,12 @@
 #include "blacklist.hpp"
 #include "logger.hpp"
+#include <shlwapi.h>
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+
+#pragma comment(lib, "Shlwapi.lib")
 
 namespace filter {
 
@@ -42,7 +45,7 @@ bool blacklist::load_file(std::wstring const& path)
 	}
 	catch (std::exception const& e)
 	{
-		filter::logger::get().write("[error] an exception occured while loading blacklist file");
+		filter::logger::get().write("[error] an exception occured while loading blacklist wildcard file");
 		filter::logger::get().write("[except] " + std::string(e.what()));
 		return (ready_ = false);
 	}
@@ -60,8 +63,8 @@ bool blacklist::contains(UNICODE_STRING* p)
 			USHORT dwLength = static_cast<USHORT>(w.length() * sizeof(WCHAR));
 			USHORT dwLength2 = static_cast<USHORT>(p->Length / sizeof(WCHAR));
 
-			return (p->Length == dwLength && _wcsnicmp(p->Buffer, w.data(),
-				std::min<USHORT>(dwLength2, static_cast<USHORT>(w.length()))) == 0);
+			return (p->Length == dwLength && _wcsnicmp(p->Buffer, w.data(), w.length()) == 0) || 
+				(p->Length >= dwLength && StrStrIW(p->Buffer, w.data()) != NULL);
 		});
 
 		return iter != list_.end();
