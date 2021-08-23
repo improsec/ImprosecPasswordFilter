@@ -37,17 +37,19 @@ It is important that the installed version of the Visual C++ Redistributable pac
 
 The filter must be installed on a Domain Controller in the Active Directory domain. Note that if you have multiple Domain Controllers serving password change requests in the Active Directory domain, you must install the filter on each of them for full coverage. In order to install the solution, you can use either of the following methods.
 * Automated installation
-	* Configure the passwords you would like to blacklist in *blacklist.txt* file
-	* Run the installation PowerShell-script (*scripts/InstallFilter.ps1*)
+	* Configure the pass phrases you would like to block in *weak-phrases.txt* file
+	* Run the installation PowerShell-script ([link](scripts/InstallFilter.ps1))
 	* Restart the Domain Controller
 * Manual installation
-	* Create directory "*C:\\improsec\\*"
-	* Create a *blacklist.txt* file in the "*C:\\improsec\\*" directory
-		* Set the contents of the *blacklist.txt* file to a list of passwords you would like to blacklist.
-	* Create a *enabled.txt* file in the "*C:\\improsec\\*" directory
-		* Set the contents of the *enabled.txt* file to '1'
+	* Create directory "*C:\\improsec-filter\\*"
+	* Create a *weak-phrases.txt* file in the "*C:\\improsec-filter\\*" directory
+		* Set the contents of the *weak-phrases.txt* file to a list of pass phrases you would like to block.
+	* Create a file named *weak-enabled.txt* in the "*C:\\improsec\\*" directory and set the contents of the file to '1'
+		* Do this only if you want to enable the basic pass phrase blocking feature.
+	* Create a file named *leaked-enabled.txt* in the "*C:\\improsec\\*" directory and set the contents of the file to '1'
+		* Do this only if you want to enable the compromised passwords blocking feature.
 	* Move or copy the filter DLL into the "*C:\\Windows\\System32\\*" directory
-	* Append the name of the filter DLL (default: *ipf.dll*) to the following registry key
+	* Append the name of the filter DLL (default: *ipf*) to the following registry key
 		* HKLM\\SYSTEM\\CurrentControlSet\\Control\\LSA\\Notification Packages
 	* Restart the Domain Controller
 
@@ -59,10 +61,10 @@ In order to stop the solution from actively rejecting blacklisted password chang
 
 In order to completely uninstall the solution, you can use either of the following methods.
 * Automated uninstallation
-	* Run the uninstallation PowerShell-script ([link](scripts/UninstallFilter.ps1)))
+	* Run the uninstallation PowerShell-script ([link](scripts/UninstallFilter.ps1))
 	* Restart the Domain Controller
 * Manual uninstallation
-	*  Remove the name of the filter DLL (default: *ipf.dll*) from the following registry key
+	* Remove the name of the filter DLL (default: *ipf.dll*) from the following registry key
 		* HKLM\\SYSTEM\\CurrentControlSet\\Control\\LSA\\Notification Packages
 	* Restart the Domain Controller
 
@@ -70,7 +72,7 @@ Upon booting up, LSASS will no longer load our filter going forward. Optionally,
 
 ## Usage
 
-Once installed on a server, the filter will hook into the LSASS validation cycle and reject any password change involving passwords that are present in the blacklist.
+Once installed on a server, the filter will hook into the LSASS validation cycle and reject any password change involving passwords that are present in the list of disallowed pass phrases.
 
 ## Authors
 * [**Valdemar Carøe**](https://github.com/st4ckh0und)
