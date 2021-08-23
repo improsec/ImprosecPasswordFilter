@@ -21,10 +21,11 @@ $path = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
 $name = "Notification Packages"
 $filt = "ipf"
 
-New-Item -Path "C:\" -Name "improsec" -ItemType Directory -Force | Out-Null
-Set-Content -Path "C:\improsec\enabled.txt" -Value "1" -Force | Out-Null
+New-Item -Path "C:\" -Name "improsec-filter" -ItemType Directory -Force | Out-Null
+Set-Content -Path "C:\improsec-filter\weak-enabled.txt" -Value "1" -Force | Out-Null
+Set-Content -Path "C:\improsec-filter\leaked-enabled.txt" -Value "1" -Force | Out-Null
 
-Copy-Item -Path "$PSScriptRoot\blacklist.txt" -Destination "C:\improsec\blacklist.txt" -Force
+Copy-Item -Path "$PSScriptRoot\weak-phrases.txt" -Destination "C:\improsec-filter\weak-phrases.txt" -Force
 Copy-Item -Path "$PSScriptRoot\$filt.dll" -Destination "C:\Windows\System32\$filt.dll" -Force
 
 if (Test-RegistryValue -Path $path -Key $name) {
