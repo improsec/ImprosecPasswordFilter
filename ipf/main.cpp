@@ -18,7 +18,7 @@
 static bool fIncludeLeaked = false;
 static wchar_t lpDirectory[256] = { 0 };
 
-static constexpr LPCWSTR lpDirectoryPath = L"C:\\Improsec-Filter";
+static constexpr LPCWSTR lpDirectoryPath = L"C:\\improsec-filter";
 static constexpr LPCWSTR lpLogFile = L"errorlog.txt";
 
 static constexpr LPCWSTR lpListFile1 = L"weak-phrases.txt";
