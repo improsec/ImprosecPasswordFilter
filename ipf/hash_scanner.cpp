@@ -88,8 +88,9 @@ bool hash_scanner::test(UNICODE_STRING* password)
 	if (ready_ && enabled_)
 	{
 		std::array<uint8_t, 16> hash;
-		nthash(password, hash);
-		return find(hash);
+		
+		if (nthash(password, hash))
+			return find(hash);
 	}
 
 	return false;
