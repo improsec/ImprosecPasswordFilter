@@ -44,9 +44,9 @@ The filter must be installed on a Domain Controller in the Active Directory doma
 	* Create directory "*C:\\improsec-filter\\*"
 	* Create a *weak-phrases.txt* file in the "*C:\\improsec-filter\\*" directory
 		* Set the contents of the *weak-phrases.txt* file to a list of pass phrases you would like to block.
-	* Create a file named *weak-enabled.txt* in the "*C:\\improsec\\*" directory and set the contents of the file to '1'
+	* Create a file named *weak-enabled.txt* in the "*C:\\improsec-filter\\*" directory and set the contents of the file to '1'
 		* Do this only if you want to enable the basic pass phrase blocking feature.
-	* Create a file named *leaked-enabled.txt* in the "*C:\\improsec\\*" directory and set the contents of the file to '1'
+	* Create a file named *leaked-enabled.txt* in the "*C:\\improsec-filter\\*" directory and set the contents of the file to '1'
 		* Do this only if you want to enable the compromised passwords blocking feature.
 	* Move or copy the filter DLL into the "*C:\\Windows\\System32\\*" directory
 	* Append the name of the filter DLL (default: *ipf*) to the following registry key
