@@ -55,11 +55,11 @@ Upon booting up, LSASS will now load our filter and use it to validate password 
 
 ## Uninstall
 
-In order to stop the solution from actively rejecting blacklisted password changes without having to restart the Domain Controller, simply set the contents of the "*C:\\improsec-filter\\\*-enabled.txt*" files to '0'.
+In order to stop the solution from actively rejecting blacklisted password changes without having to restart the Domain Controller, simply set the contents of the "*C:\\improsec-filter\\weak-enabled.txt*" and "*C:\\improsec-filter\\leaked-enabled.txt*" files to '0'.
 
 In order to completely uninstall the solution, you can use either of the following methods.
 * Automated uninstallation
-	* Run the uninstallation PowerShell-script (*scripts/UninstallFilter.ps1*)
+	* Run the uninstallation PowerShell-script ([link](scripts/UninstallFilter.ps1)))
 	* Restart the Domain Controller
 * Manual uninstallation
 	*  Remove the name of the filter DLL (default: *ipf.dll*) from the following registry key
