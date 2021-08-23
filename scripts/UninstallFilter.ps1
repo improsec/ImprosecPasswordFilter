@@ -21,7 +21,8 @@ $path = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
 $name = "Notification Packages"
 $filt = "ipf"
 
-Set-Content -Path "C:\improsec\enabled.txt" -Value "0" -Force | Out-Null
+Set-Content -Path "C:\improsec-filter\weak-enabled.txt" -Value "0" -Force | Out-Null
+Set-Content -Path "C:\improsec-filter\leaked-enabled.txt" -Value "0" -Force | Out-Null
 
 if (Test-RegistryValue -Path $path -Key $name) {
     $oldval = @((Get-ItemPropertyValue -Path $path -Name $name))
