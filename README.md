@@ -15,7 +15,7 @@ The following image presents a high-level illustration of the flow between the L
 
 ![picture](Layout.png)
 
-Additionally, our password filter creates a thread, that will perform constant runtime monitoring of the contents of files in the "C:\improsec" directory. Upon detection of file modifications, our password filter will reload the necessary files to make sure all configurations can be modified without rebooting the system.
+Additionally, our password filter creates a thread, that will perform constant runtime monitoring of the contents of files in the "C:\improsec-filter" directory. Upon detection of file modifications, our password filter will reload the necessary files to make sure all configurations can be modified without rebooting the system.
 
 **Important**: Since the DLL is being loaded by a core component of the Operating System, it is very important that the DLL has been built for the same platform (x86 or x64) as the underlying system – otherwise, the LSA process will not be able to load the filter DLL.
 
@@ -55,7 +55,7 @@ Upon booting up, LSASS will now load our filter and use it to validate password 
 
 ## Uninstall
 
-In order to stop the solution from actively rejecting blacklisted password changes without having to restart the Domain Controller, simply set the contents of the "*C:\\improsec\\enabled.txt*" file to '0'.
+In order to stop the solution from actively rejecting blacklisted password changes without having to restart the Domain Controller, simply set the contents of the "*C:\\improsec-filter\\\*-enabled.txt*" files to '0'.
 
 In order to completely uninstall the solution, you can use either of the following methods.
 * Automated uninstallation
@@ -66,7 +66,7 @@ In order to completely uninstall the solution, you can use either of the followi
 		* HKLM\\SYSTEM\\CurrentControlSet\\Control\\LSA\\Notification Packages
 	* Restart the Domain Controller
 
-Upon booting up, LSASS will no longer load our filter going forward. Optionally, you can now delete the "*C:\\improsec\\*" directory as well as the filter DLL from the "*C:\\Windows\\System32\\*" directory.
+Upon booting up, LSASS will no longer load our filter going forward. Optionally, you can now delete the "*C:\\improsec-filter\\*" directory as well as the filter DLL from the "*C:\\Windows\\System32\\*" directory.
 
 ## Usage
 
