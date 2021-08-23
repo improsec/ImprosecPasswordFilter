@@ -1,9 +1,9 @@
-#include <Windows.h>
-#include <NTSecAPI.h>
-
+#include "hash_scanner.hpp"
 #include "adler32.hpp"
 #include "blacklist.hpp"
 #include "logger.hpp"
+
+#include <Windows.h>
 
 #include <iostream>
 #include <vector>
@@ -15,17 +15,33 @@
 
 #define STATUS_SUCCESS 0x00000000
 
-static constexpr LPCWSTR lpDirectory = L"C:\\improsec";
-static constexpr LPCWSTR lpConfigFile = L"enabled.txt";
-static constexpr LPCWSTR lpListFile = L"blacklist.txt";
+static bool fIncludeLeaked = false;
+static wchar_t lpDirectory[256] = { 0 };
+
+static constexpr LPCWSTR lpDirectoryPath = L"C:\\Improsec-Filter";
 static constexpr LPCWSTR lpLogFile = L"errorlog.txt";
 
-void HandleFilterEnabling(std::vector<uint8_t> const& data)
+static constexpr LPCWSTR lpListFile1 = L"weak-phrases.txt";
+static constexpr LPCWSTR lpConfFile1 = L"weak-enabled.txt";
+static constexpr LPCWSTR lpListFile2 = L"leaked-passwords.bin";
+static constexpr LPCWSTR lpConfFile2 = L"leaked-enabled.txt";
+
+void HandleFilterEnabling(std::vector<uint8_t> const& data, bool weak)
 {
-	if (!data.empty() && data[0] == '0')
-		filter::blacklist::get().disable();
-	else
-		filter::blacklist::get().enable();
+	if (weak)
+	{
+		if (!data.empty() && data[0] == '1')
+			filter::blacklist::get().enable();
+		else
+			filter::blacklist::get().disable();
+	}
+	else if (fIncludeLeaked)
+	{
+		if (!data.empty() && data[0] == '1')
+			filter::hash_scanner::get().enable();
+		else
+			filter::hash_scanner::get().disable();
+	}
 }
 
 bool RetrieveFileData(std::wstring const& path, std::vector<uint8_t>& data)
@@ -53,6 +69,8 @@ bool RetrieveFileData(std::wstring const& path, std::vector<uint8_t>& data)
 
 			return (dwRead == dwSize);
 		}
+
+		CloseHandle(hFile);
 	}
 
 	return false;
@@ -98,11 +116,14 @@ void ValidateModification(std::wstring const& directory, FILE_NOTIFY_INFORMATION
 				std::vector<uint8_t> data;
 
 				/* Check if modifications were made to the blacklist file */
-				if (CompareFileInfo(directory, lpListFile, info, &adler_list, data))
-					filter::blacklist::get().load_file(directory + lpListFile);
-				/* Check if modifications were made to the configuration file */
-				else if (CompareFileInfo(directory, lpConfigFile, info, &adler_conf, data))
-					HandleFilterEnabling(data);
+				if (CompareFileInfo(directory, lpListFile1, info, &adler_list, data))
+					filter::blacklist::get().load_file(directory + lpListFile1);
+				else if (CompareFileInfo(directory, lpListFile2, info, &adler_conf, data))
+					filter::hash_scanner::get().open(directory + lpListFile2);
+				else if (CompareFileInfo(directory, lpConfFile1, info, &adler_conf, data))
+					HandleFilterEnabling(data, true);
+				else if (CompareFileInfo(directory, lpConfFile2, info, &adler_conf, data))
+					HandleFilterEnabling(data, false);
 			}
 
 			info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(reinterpret_cast<uint8_t*>(info) + info->NextEntryOffset);
@@ -113,44 +134,93 @@ void ValidateModification(std::wstring const& directory, FILE_NOTIFY_INFORMATION
 
 void MonitorThread()
 {
+	/* Start monitoring changes to files in the root directory */
+	HANDLE hDirectory = CreateFile(lpDirectory, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	
+	if (hDirectory == NULL || hDirectory == INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			Sleep(2000);
+			hDirectory = CreateFile(lpDirectory, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+		} while (hDirectory == NULL || hDirectory == INVALID_HANDLE_VALUE);
+	}
+
 	std::wstring directory = std::wstring(lpDirectory) + L'\\';
+	filter::logger::get().open(directory + lpLogFile);
 
 	/* Load configuration file to check if the password filter should be active */
 	std::vector<uint8_t> data;
 
-	filter::blacklist::get().enable();
-	filter::logger::get().open(directory + lpLogFile);
-
-	if (!RetrieveFileData(directory + lpConfigFile, data))
-		filter::logger::get().write("[warning] failed to read 'enabled.txt' file - disabling might be problematic");
-	else
-		HandleFilterEnabling(data);
-
-	/* Load blacklist entries from file */
-	filter::blacklist::get().load_file(directory + lpListFile);
-
-	/* Start monitoring changes to files in the root directory */
-	HANDLE hDirectory = CreateFile(lpDirectory, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-
-	if (hDirectory == INVALID_HANDLE_VALUE || hDirectory == NULL)
-		filter::logger::get().write("[error] could not create monitoring handle for improsec root folder");
+	if (RetrieveFileData(directory + lpConfFile1, data))
+		HandleFilterEnabling(data, true);
 	else
 	{
-		while (true)
+		filter::blacklist::get().disable();
+		filter::logger::get().write("[warning] failed to read 'weak-enabled.txt' file - enabling might be problematic");
+	}
+
+	if (RetrieveFileData(directory + lpConfFile2, data))
+		HandleFilterEnabling(data, false);
+	else
+	{
+		filter::hash_scanner::get().disable();
+		filter::logger::get().write("[warning] failed to read 'leaked-enabled.txt' file - enabling might be problematic");
+	}
+
+	/* Load filter list */
+	auto start = std::chrono::high_resolution_clock::now();
+	std::cout << "Loading filter list" << std::endl;
+
+	try
+	{
+		filter::blacklist::get().load_file(directory + lpListFile1);
+	}
+	catch (std::exception const& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+
+	std::cout << "Finished in " << time_span.count() << " seconds" << std::endl;
+	
+	/* Load leaked list */
+	if (fIncludeLeaked)
+	{
+		start = std::chrono::high_resolution_clock::now();
+		std::cout << "Loading leaked list" << std::endl;
+
+		try
 		{
-			DWORD bytes = 0;
-			std::vector<uint8_t> buf(4096);
-
-			if (!ReadDirectoryChangesW(hDirectory, &buf[0], static_cast<DWORD>(buf.size()), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, &bytes, NULL, NULL))
-				filter::logger::get().write("[error] failed to read directory changes from improsec root folder");
-			else if (bytes > 0)
-				ValidateModification(directory, reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&buf[0]));
-
-			Sleep(1000);
+			filter::hash_scanner::get().open(directory + lpListFile2);
+		}
+		catch (std::exception const& e)
+		{
+			std::cout << "Exception: " << e.what() << std::endl;
 		}
 
-		CloseHandle(hDirectory);
+		end = std::chrono::high_resolution_clock::now();
+		time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+
+		std::cout << "Finished in " << time_span.count() << " seconds" << std::endl;
 	}
+
+	while (true)
+	{
+		DWORD bytes = 0;
+		std::vector<uint8_t> buf(4096);
+
+		if (!ReadDirectoryChangesW(hDirectory, &buf[0], static_cast<DWORD>(buf.size()), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, &bytes, NULL, NULL))
+			filter::logger::get().write("[error] failed to read directory changes from improsec root folder");
+		else if (bytes > 0)
+			ValidateModification(directory, reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&buf[0]));
+
+		Sleep(1000);
+	}
+
+	CloseHandle(hDirectory);
 }
 
 /*
@@ -188,8 +258,8 @@ extern "C" __declspec(dllexport) BOOLEAN NTAPI PasswordFilter(UNICODE_STRING* Ac
 {
 	BOOL fResult = filter::blacklist::get().contains(Password) ? TRUE : FALSE;
 
-	//if (Password != NULL && Password->Buffer != NULL)
-	//	SecureZeroMemory(Password->Buffer, Password->Length);
+	if (fResult == FALSE && fIncludeLeaked)
+		fResult = filter::hash_scanner::get().test(Password) ? TRUE : FALSE;
 
 	// TRUE = The password is accepted by the filter (LSA evaluates the rest of the filter chain)
 	// FALSE = The password is rejected by the filter (LSA returns the ERROR_ILL_FORMED_PASSWORD (1324) status code to the source of the password change request)
@@ -202,7 +272,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpvReserved)
 	static HANDLE hThread = NULL;
 
 	if (dwReason == DLL_PROCESS_ATTACH)
+	{
+		ExpandEnvironmentStrings(lpDirectoryPath, lpDirectory, sizeof(lpDirectory) / sizeof(wchar_t));
 		return ((hThread = CreateThread(NULL, 0, LPTHREAD_START_ROUTINE(&MonitorThread), NULL, 0, NULL)) != NULL);
+	}
 	else if (dwReason == DLL_PROCESS_DETACH)
 		return TerminateThread(hThread, 0);
 
