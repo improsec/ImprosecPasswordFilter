@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Windows.h>
-#include <NTSecAPI.h>
+#include <winternl.h>
 
 #include <mutex>
 #include <string>
