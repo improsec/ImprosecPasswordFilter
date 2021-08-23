@@ -10,6 +10,9 @@
     <Filter Include="logger">
       <UniqueIdentifier>{53da7fc8-45b6-4c1f-9b37-e6263009328c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="leaklist">
+      <UniqueIdentifier>{0106ba4b-d629-46ca-9a11-4e6dcd4c5bab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.hpp">
@@ -20,6 +23,12 @@
     </ClInclude>
     <ClInclude Include="blacklist.hpp">
       <Filter>blacklist</Filter>
+    </ClInclude>
+    <ClInclude Include="hash_file.hpp">
+      <Filter>leaklist</Filter>
+    </ClInclude>
+    <ClInclude Include="hash_scanner.hpp">
+      <Filter>leaklist</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -33,5 +42,11 @@
       <Filter>blacklist</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="hash_file.cpp">
+      <Filter>leaklist</Filter>
+    </ClCompile>
+    <ClCompile Include="hash_scanner.cpp">
+      <Filter>leaklist</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
